@@ -1,5 +1,6 @@
 #include "Adafruit_TLC59711.h"
 #include <SPI.h>
+#include <XInput.h>
 
 // PCB Rev1 Button/Switch mapping
 #define BTN0 5
@@ -53,6 +54,9 @@ void setup() {
 
   tlc.begin();
   tlc.write();
+
+	XInput.setReceiveCallback(rumbleCallback);
+	XInput.begin();
 }
 
 void loop() {
@@ -69,4 +73,16 @@ void loop() {
     tlc.write();
     delay(500);
   }
+}
+
+void rumbleCallback(uint8_t packetType) {
+	// If we have an LED packet
+	if (packetType == (uint8_t) XInputReceiveType::LEDs) {
+		return;
+	}
+
+	// If we have a rumble packet
+	if (packetType == (uint8_t) XInputReceiveType::Rumble) {
+		return;
+	}
 }
