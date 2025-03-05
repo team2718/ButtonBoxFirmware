@@ -21,11 +21,26 @@
 #define SW7  26
 
 #define TLC59711_CHAINED 1
-#define TLC59711_DATA    11
-#define TLC59711_CLK     13
+#define TLC59711_DATA    3
+#define TLC59711_CLK     2
 Adafruit_TLC59711 tlc = Adafruit_TLC59711(TLC59711_CHAINED, TLC59711_CLK, TLC59711_DATA);
 
-bool ledStates[24]{};
+int elePosition = 4;
+bool isLeft = true;
+
+const int NumButtons = 10;
+const int Buttons[NumButtons] = {
+	BUTTON_A,
+	BUTTON_B,
+	BUTTON_X,
+	BUTTON_Y,
+	BUTTON_LB,
+	BUTTON_RB,
+	BUTTON_BACK,
+	BUTTON_START,
+	BUTTON_L3,
+	BUTTON_R3,
+};
 
 void setup() {
   pinMode(BTN0, INPUT_PULLDOWN);
@@ -55,34 +70,120 @@ void setup() {
   tlc.begin();
   tlc.write();
 
-	XInput.setReceiveCallback(rumbleCallback);
+  XInput.setAutoSend(false);
+	// XInput.setReceiveCallback(rumbleCallback);
 	XInput.begin();
 }
 
 void loop() {
-  for(int on_i=0; on_i<24; on_i++) {
-    for(int i=0; i<24; i++) {
-      if (i == on_i) {
-        tlc.setPWM(i, 65535); // on
-      } else {
-        tlc.setPWM(i, 0); // off
-      }
+  XInput.releaseAll();
 
-      // tlc.setPWM(i, ledStates[i] * 65535);
-    }
-    tlc.write();
-    delay(500);
+  if (digitalRead(BTN0)) {
+    XInput.press(BUTTON_A);
+    elePosition = 1;
   }
+
+  if (digitalRead(BTN1)) {
+    XInput.press(BUTTON_B);
+    elePosition = 2;
+  }
+
+  if (digitalRead(BTN2)) {
+    XInput.press(BUTTON_X);
+    elePosition = 3;
+  }
+
+  if (digitalRead(BTN3)) {
+    XInput.press(BUTTON_Y);
+    elePosition = 4;
+  }
+
+  if (digitalRead(BTN4) || digitalRead(BTN5)) {
+    XInput.press(BUTTON_LB);
+    isLeft = true;
+  }
+
+  if (digitalRead(BTN6) || digitalRead(BTN7)) {
+    XInput.press(BUTTON_RB);
+    isLeft = false;
+  }
+
+  int32_t sw_axis = 0;
+
+  if (digitalRead(SW0)) {
+    sw_axis += 128;
+  }
+
+  if (digitalRead(SW1)) {
+    sw_axis += 64;
+  }
+
+  if (digitalRead(SW2)) {
+    sw_axis += 32;
+  }
+
+  if (digitalRead(SW3)) {
+    sw_axis += 16;
+  }
+
+  if (digitalRead(SW4)) {
+    sw_axis += 8;
+  }
+
+  XInput.setTrigger(TRIGGER_LEFT, sw_axis);
+
+  XInput.send();
+
+  for (int i=0; i<16; i++) {
+    tlc.setPWM(i, 0);
+  }
+
+  switch (elePosition) {
+    case 1:
+      tlc.setPWM(11, 65535); break;
+    case 2:
+      tlc.setPWM(10, 65535); break;
+    case 3:
+      tlc.setPWM(9, 65535); break;
+    case 4:
+      tlc.setPWM(8, 65535); break;
+  }
+
+  if (!isLeft) {
+    tlc.setPWM(4, 65535);
+    tlc.setPWM(5, 65535);
+  } else {
+    tlc.setPWM(6, 65535);
+    tlc.setPWM(7, 65535);
+  }
+
+  tlc.write();
+  delay(20);
 }
 
-void rumbleCallback(uint8_t packetType) {
-	// If we have an LED packet
-	if (packetType == (uint8_t) XInputReceiveType::LEDs) {
-		return;
-	}
+// void rumbleCallback(uint8_t packetType) {
+// 	// If we have an LED packet
+// 	if (packetType == (uint8_t) XInputReceiveType::LEDs) {
+// 		return;
+// 	}
 
-	// If we have a rumble packet
-	if (packetType == (uint8_t) XInputReceiveType::Rumble) {
-		return;
-	}
-}
+// 	// If we have a rumble packet
+// 	if (packetType == (uint8_t) XInputReceiveType::Rumble) {
+//     double rumble = XInput.getRumble() / (double)(2^16-1);
+
+//     bool isLeft = rumble > 0.5;
+
+//     if (isLeft) {
+//       ledStates[0] = rumble > 0.55;
+//       ledStates[1] = rumble > 0.65;
+//       ledStates[2] = rumble > 0.75;
+//       ledStates[3] = rumble > 0.85;
+//     } else {
+//       ledStates[0] = rumble > 0.05;
+//       ledStates[1] = rumble > 0.15;
+//       ledStates[2] = rumble > 0.25;
+//       ledStates[3] = rumble > 0.35;
+//     }
+// 		return;
+// 	}
+// }
