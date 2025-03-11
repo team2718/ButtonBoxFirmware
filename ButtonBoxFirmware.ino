@@ -224,6 +224,8 @@ void rumbleCallback(uint8_t packetType) {
 
 	// If we have a rumble packet
 	if (packetType == (uint8_t) XInputReceiveType::Rumble) {
-    rumbleValue = XInput.getRumbleLeft();
+    if (XInput.getRumbleRight() > 0) {
+      rumbleValue = XInput.getRumbleLeft();
+    }
 	}
 }
