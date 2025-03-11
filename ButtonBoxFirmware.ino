@@ -19,14 +19,21 @@
 #define SW5  24
 #define SW6  25
 #define SW7  26
+#define LED0 11
+#define LED1 10
+#define LED2 9
+#define LED3 8
+#define LED4 7
+#define LED5 6
+#define LED6 5
+#define LED7 4
+
+const int ledArray[8] = {LED0, LED1, LED2, LED3, LED4, LED5, LED6, LED7};
 
 #define TLC59711_CHAINED 1
 #define TLC59711_DATA    3
 #define TLC59711_CLK     2
 Adafruit_TLC59711 tlc = Adafruit_TLC59711(TLC59711_CHAINED, TLC59711_CLK, TLC59711_DATA);
-
-int elePosition = 4;
-bool isLeft = true;
 
 const int NumButtons = 10;
 const int Buttons[NumButtons] = {
@@ -70,6 +77,13 @@ void setup() {
   tlc.begin();
   tlc.write();
 
+  delay(10);
+  for (int i=0; i<8; i++) {
+    tlc.setPWM(ledArray[i], 65535);
+    tlc.write();
+    delay(120);
+  }
+
   XInput.setAutoSend(false);
 	XInput.setReceiveCallback(rumbleCallback);
 	XInput.begin();
@@ -82,32 +96,26 @@ void loop() {
 
   if (digitalRead(BTN0)) {
     XInput.press(BUTTON_A);
-    elePosition = 1;
   }
 
   if (digitalRead(BTN1)) {
     XInput.press(BUTTON_B);
-    elePosition = 2;
   }
 
   if (digitalRead(BTN2)) {
     XInput.press(BUTTON_X);
-    elePosition = 3;
   }
 
   if (digitalRead(BTN3)) {
     XInput.press(BUTTON_Y);
-    elePosition = 4;
   }
 
   if (digitalRead(BTN4) || digitalRead(BTN5)) {
     XInput.press(BUTTON_LB);
-    isLeft = true;
   }
 
   if (digitalRead(BTN6) || digitalRead(BTN7)) {
     XInput.press(BUTTON_RB);
-    isLeft = false;
   }
 
   int32_t sw_axis = 0;
@@ -136,81 +144,57 @@ void loop() {
 
   XInput.send();
 
-  for (int i=0; i<16; i++) {
-    tlc.setPWM(i, 0);
-  }
-
-  // switch (elePosition) {
-  //   case 1:
-  //     tlc.setPWM(11, 65535); break;
-  //   case 2:
-  //     tlc.setPWM(10, 65535); break;
-  //   case 3:
-  //     tlc.setPWM(9, 65535); break;
-  //   case 4:
-  //     tlc.setPWM(8, 65535); break;
-  // }
-
-  // if (!isLeft) {
-  //   tlc.setPWM(4, 65535);
-  //   tlc.setPWM(5, 65535);
-  // } else {
-  //   tlc.setPWM(6, 65535);
-  //   tlc.setPWM(7, 65535);
-  // }
-
   // Top Left
   if ((rumbleValue & 0b1) > 0) {
-    tlc.setPWM(11, 65535);
+    tlc.setPWM(LED0, 65535);
   } else {
-    tlc.setPWM(11, 0);
+    tlc.setPWM(LED0, 0);
   }
 
   if ((rumbleValue & 0b10) > 0) {
-    tlc.setPWM(10, 65535);
+    tlc.setPWM(LED1, 65535);
   } else {
-    tlc.setPWM(10, 0);
+    tlc.setPWM(LED1, 0);
   }
 
   if ((rumbleValue & 0b100) > 0) {
-    tlc.setPWM(9, 65535);
+    tlc.setPWM(LED2, 65535);
   } else {
-    tlc.setPWM(9, 0);
+    tlc.setPWM(LED2, 0);
   }
 
   // Top Right
   if ((rumbleValue & 0b1000) > 0) {
-    tlc.setPWM(8, 65535);
+    tlc.setPWM(LED3, 65535);
   } else {
-    tlc.setPWM(8, 0);
+    tlc.setPWM(LED3, 0);
   }
 
   // Bottom Left
   if ((rumbleValue & 0b10000) > 0) {
-    tlc.setPWM(7, 65535);
+    tlc.setPWM(LED4, 65535);
   } else {
-    tlc.setPWM(7, 0);
+    tlc.setPWM(LED4, 0);
   }
 
   if ((rumbleValue & 0b100000) > 0) {
-    tlc.setPWM(6, 65535);
+    tlc.setPWM(LED5, 65535);
   } else {
-    tlc.setPWM(6, 0);
+    tlc.setPWM(LED5, 0);
   }
 
   if ((rumbleValue & 0b1000000) > 0) {
-    tlc.setPWM(5, 65535);
+    tlc.setPWM(LED6, 65535);
   } else {
-    tlc.setPWM(5, 0);
+    tlc.setPWM(LED6, 0);
   }
 
   // Bottom Right
   if ((rumbleValue & 0b10000000) > 0) {
-    tlc.setPWM(4, 65535);
+    tlc.setPWM(LED7, 65535);
   } else {
-    tlc.setPWM(4, 0);
+    tlc.setPWM(LED7, 0);
   }
-
 
   tlc.write();
   delay(20);
