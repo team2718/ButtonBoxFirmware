@@ -71,9 +71,11 @@ void setup() {
   tlc.write();
 
   XInput.setAutoSend(false);
-	// XInput.setReceiveCallback(rumbleCallback);
+	XInput.setReceiveCallback(rumbleCallback);
 	XInput.begin();
 }
+
+uint8_t rumbleValue = 0;
 
 void loop() {
   XInput.releaseAll();
@@ -138,52 +140,90 @@ void loop() {
     tlc.setPWM(i, 0);
   }
 
-  switch (elePosition) {
-    case 1:
-      tlc.setPWM(11, 65535); break;
-    case 2:
-      tlc.setPWM(10, 65535); break;
-    case 3:
-      tlc.setPWM(9, 65535); break;
-    case 4:
-      tlc.setPWM(8, 65535); break;
+  // switch (elePosition) {
+  //   case 1:
+  //     tlc.setPWM(11, 65535); break;
+  //   case 2:
+  //     tlc.setPWM(10, 65535); break;
+  //   case 3:
+  //     tlc.setPWM(9, 65535); break;
+  //   case 4:
+  //     tlc.setPWM(8, 65535); break;
+  // }
+
+  // if (!isLeft) {
+  //   tlc.setPWM(4, 65535);
+  //   tlc.setPWM(5, 65535);
+  // } else {
+  //   tlc.setPWM(6, 65535);
+  //   tlc.setPWM(7, 65535);
+  // }
+
+  // Top Left
+  if ((rumbleValue & 0b1) > 0) {
+    tlc.setPWM(11, 65535);
+  } else {
+    tlc.setPWM(11, 0);
   }
 
-  if (!isLeft) {
-    tlc.setPWM(4, 65535);
+  if ((rumbleValue & 0b10) > 0) {
+    tlc.setPWM(10, 65535);
+  } else {
+    tlc.setPWM(10, 0);
+  }
+
+  if ((rumbleValue & 0b100) > 0) {
+    tlc.setPWM(9, 65535);
+  } else {
+    tlc.setPWM(9, 0);
+  }
+
+  // Top Right
+  if ((rumbleValue & 0b1000) > 0) {
+    tlc.setPWM(8, 65535);
+  } else {
+    tlc.setPWM(8, 0);
+  }
+
+  // Bottom Left
+  if ((rumbleValue & 0b10000) > 0) {
+    tlc.setPWM(7, 65535);
+  } else {
+    tlc.setPWM(7, 0);
+  }
+
+  if ((rumbleValue & 0b100000) > 0) {
+    tlc.setPWM(6, 65535);
+  } else {
+    tlc.setPWM(6, 0);
+  }
+
+  if ((rumbleValue & 0b1000000) > 0) {
     tlc.setPWM(5, 65535);
   } else {
-    tlc.setPWM(6, 65535);
-    tlc.setPWM(7, 65535);
+    tlc.setPWM(5, 0);
   }
+
+  // Bottom Right
+  if ((rumbleValue & 0b10000000) > 0) {
+    tlc.setPWM(4, 65535);
+  } else {
+    tlc.setPWM(4, 0);
+  }
+
 
   tlc.write();
   delay(20);
 }
 
-// void rumbleCallback(uint8_t packetType) {
-// 	// If we have an LED packet
-// 	if (packetType == (uint8_t) XInputReceiveType::LEDs) {
-// 		return;
-// 	}
+void rumbleCallback(uint8_t packetType) {
+	// If we have an LED packet
+	if (packetType == (uint8_t) XInputReceiveType::LEDs) {
+		return;
+	}
 
-// 	// If we have a rumble packet
-// 	if (packetType == (uint8_t) XInputReceiveType::Rumble) {
-//     double rumble = XInput.getRumble() / (double)(2^16-1);
-
-//     bool isLeft = rumble > 0.5;
-
-//     if (isLeft) {
-//       ledStates[0] = rumble > 0.55;
-//       ledStates[1] = rumble > 0.65;
-//       ledStates[2] = rumble > 0.75;
-//       ledStates[3] = rumble > 0.85;
-//     } else {
-//       ledStates[0] = rumble > 0.05;
-//       ledStates[1] = rumble > 0.15;
-//       ledStates[2] = rumble > 0.25;
-//       ledStates[3] = rumble > 0.35;
-//     }
-// 		return;
-// 	}
-// }
+	// If we have a rumble packet
+	if (packetType == (uint8_t) XInputReceiveType::Rumble) {
+    rumbleValue = XInput.getRumbleLeft();
+	}
+}
